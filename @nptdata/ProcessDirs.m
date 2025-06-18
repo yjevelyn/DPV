@@ -70,8 +70,10 @@ cwd = pwd;
 for i = 1:ndirs
 	fprintf('Processing %s\n',sdirs{i});
     temp = sdirs{i};
-    temp = temp(1:end-14);
-	cd(temp)
+%     temp = temp(1:end-14);
+    if isfolder(temp)
+	    cd(temp)
+    end
     % check for skip.txt
     if(~checkMarkers(obj,Args.RedoValue,'dirs'))
 		if(useObj)
