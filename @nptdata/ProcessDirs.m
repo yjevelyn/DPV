@@ -1,3 +1,4 @@
+
 function [robj,data] = ProcessDirs(obj,varargin)
 %nptdata/ProcessDirs Process directories in nptdata object
 %   [ROBJ,OBJ2] = ProcessDirs(OBJ,'Object',OBJECTNAME)
@@ -63,7 +64,7 @@ if(isa(obj,'nptdata'))
 else
 	sdirs = obj.SessionDirs;
 end
-% get number of directories in obj
+% get number of directories in obj     
 ndirs = length(sdirs);
 % get current directory
 cwd = pwd;
@@ -71,20 +72,34 @@ for i = 1:ndirs
 	fprintf('Processing %s\n',sdirs{i});
     temp = sdirs{i};
 %     temp = temp(1:end-14);
-    if isfolder(temp)
-	    cd(temp)
+    % check if the folder exist or not
+    try
+        if isfolder(temp)
+	        cd(temp);
+        else
+            error('MATLAB:FolderNotFound', 'The folder "%s" does not exist.', temp);
+        end
+    catch ME
+        fprintf(2, 'Error: %s\n', ME.message);
     end
     % check for skip.txt
     if(~checkMarkers(obj,Args.RedoValue,'dirs'))
-		if(useObj)
-			% call the functional form of plus so we can pass additional
-			% flags to it. Also pass the optional input arguments to the
-			% constructor of the object.
-			data = plus(data,feval(Args.Object,'auto', ...
-				varargin{:}),varargin{:});
-		else
-			eval(Args.nptDirCmd);
-		end
+        % error handling: continue to process the directories even when
+        % error occurs in a specific cell
+        try
+		    if(useObj)
+			    % call the functional form of plus so we can pass additional
+			    % flags to it. Also pass the optional input arguments to the
+			    % constructor of the object.
+			    data = plus(data,feval(Args.Object,'auto', ...
+	    	        varargin{:}),varargin{:});
+		    else
+			    eval(Args.nptDirCmd);
+            end
+        catch ME
+                fprintf(2, 'Error: %s\n', ME.message);
+                fprintf(2, 'Error in processing %s\n', temp);
+        end
     else
         fprintf('Skipped!\n');
     end
